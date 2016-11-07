@@ -1,0 +1,2 @@
+class {'cactos_cloudiator':
+}

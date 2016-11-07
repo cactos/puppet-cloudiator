@@ -1,0 +1,36 @@
+---
+
+driver:
+  name: openstack
+  openstack_username: kitchen-ci
+  openstack_api_key: $kitchen_ci_pass
+  openstack_auth_url: http://omistack-beta.e-technik.uni-ulm.de:5000/v2.0/tokens
+  require_chef_omnibus: true
+  openstack_tenant: stud_winkelhofer
+  availability_zone: default-projects
+  key_name: kitchen-ci
+  private_key_path: id_rsa
+  floating_ip: 134.60.64.105
+  security_groups:
+    - ssh
+    - All
+  image_ref: 9c154d9a-fab9-4507-a3d7-21b72d31de97
+  flavor_ref: m1.medium
+  #user_data: userdata.txt
+
+transport:
+  username: ubuntu
+  ssh_key: id_rsa
+
+provisioner:
+  name: puppet_apply
+  require_puppet_collections: true
+  # manifest: test/site.pp
+  manifests_path: test
+  modules_path: modules
+
+platforms:
+  - name: ubuntu-14.04
+
+suites:
+  - name: default

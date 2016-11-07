@@ -1,0 +1,57 @@
+image: ruby:2.3
+
+stages:
+    - prepare
+    - deploy
+    - test
+    - destroy
+
+before_script:
+    - echo -n "$kitchen_ci_key" | tr -d '\r' > ./id_rsa
+    - chmod 600 ./id_rsa
+    - "sed -i \"s/openstack_api_key.*/openstack_api_key: $kitchen_ci_pass/g\" .kitchen.yml"
+    - gem install test-kitchen
+    - gem install kitchen-puppet
+    - gem install kitchen-openstack
+    - gem install puppet
+    - gem install librarian-puppet
+    - librarian-puppet init
+    - librarian-puppet install
+
+prepare:
+    stage: prepare
+    artifacts:
+        paths:
+        - .kitchen/
+        expire_in: 20 mins
+    script:
+        - rm -rf .kitchen || true
+        - kitchen create 
+
+deploy: 
+    stage: deploy
+    script:
+        - kitchen converge
+
+# Test GUI
+test: 
+    before_script:
+        - "true"
+    stage: test
+    script:
+        # wait until cloudiator is ready
+        - sleep 600
+        - '(cat < /dev/tcp/134.60.64.105/9000 &) && sleep 1 && pkill -9 cat'
+
+destroy: 
+    before_script:
+    - echo -n "$kitchen_ci_key" | tr -d '\r' > ./id_rsa
+    - chmod 600 ./id_rsa
+    - "sed -i \"s/openstack_api_key.*/openstack_api_key: $kitchen_ci_pass/g\" .kitchen.yml"
+    - gem install test-kitchen
+    - gem install kitchen-puppet
+    - gem install kitchen-openstack
+    stage: destroy
+    script:
+        - kitchen destroy
+    when: always
